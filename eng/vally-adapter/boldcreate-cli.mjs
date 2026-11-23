@@ -52,6 +52,7 @@ export function runBoldCreate(prompt, options = {}) {
     "-p",
     prompt,
     "--mode", "json",
+    "--no-session",
   ];
   if (options.agentFile) args.push("--agent-file", options.agentFile);
   if (options.model) args.push("--model", options.model);
