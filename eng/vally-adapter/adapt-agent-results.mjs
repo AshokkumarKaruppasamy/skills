@@ -39,6 +39,7 @@ const { values: opts } = parseArgs({
     "repo-root": { type: "string", default: "." },
     model: { type: "string" },
     "judge-model": { type: "string" },
+    "execution-lane": { type: "string", default: "native-agent-sdk" },
     help: { type: "boolean", default: false },
   },
   strict: true,
@@ -58,7 +59,7 @@ Options:
   process.exit(opts.help ? 0 : 1);
 }
 
-function agentIdentity(evalFile) {
+function agentIdentity(evalFile, executionLane = "native-agent-sdk") {
   const normalized = normalizeEvalFile(evalFile);
   const parts = normalized.split("/").filter(Boolean);
   if (parts.length < 4 || parts[0] !== "tests" || parts.at(-1) !== "eval.yaml") {
@@ -76,7 +77,7 @@ function agentIdentity(evalFile) {
       skill: evalName,
       skillPath: `agentic-workflows/${evalName}/aw.yml`,
       kind: "workflow",
-      evaluationLane: "workflow-prompt-sdk",
+      evaluationLane: executionLane,
     };
   }
   const agentName = evalName.startsWith("agent.")
@@ -92,7 +93,7 @@ function agentIdentity(evalFile) {
     skill,
     skillPath: `plugins/${plugin}/agents/${agentName}.agent.md`,
     kind: "agent",
-    evaluationLane: "native-agent-sdk",
+    evaluationLane: executionLane,
   };
 }
 
@@ -603,7 +604,7 @@ function main() {
       invalidEvals.push(evalFile);
     } else {
       try {
-        verdict = legacyToVerdict(legacy, evalFile, repoRoot);
+        verdict = legacyToVerdict(legacy, evalFile, repoRoot, opts["execution-lane"]);
         if (verdict.state === VERDICT_STATES.INVALID_INCONCLUSIVE
             && verdict.stateReason?.code !== "underpowered") {
           invalidEvals.push(evalFile);
